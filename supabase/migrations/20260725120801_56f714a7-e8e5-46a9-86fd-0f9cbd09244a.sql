@@ -1,0 +1,1 @@
+update app_assets set data = jsonb_set(data, '{column}', '"aguardando_saida"') where id = 'a-1784938141000';

@@ -1,0 +1,1 @@
+UPDATE public.app_inspections SET data = (data - 'supervisorSig') - 'supervisorSigEm', updated_at = now() WHERE id = 'insp-1786542976245';

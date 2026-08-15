@@ -1,0 +1,1 @@
+UPDATE public.app_assets SET data = data - 'dataLiberacao' WHERE id = 'card-te-112-oficina-engelog-arm-25744fb6';

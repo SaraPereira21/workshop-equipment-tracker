@@ -1,0 +1,1 @@
+UPDATE public.app_inspections SET data = data || '{"teste": true}'::jsonb WHERE id = 'insp-1784924616084';
