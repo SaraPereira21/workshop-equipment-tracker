@@ -1,10 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ClipboardCheck, Plus, ChevronRight, Fuel, Sparkles, Mail, XCircle, Lock, Unlock, FileDown, FileUp } from "lucide-react";
+import { useState, useMemo } from "react";
+import {
+  ClipboardCheck,
+  Plus,
+  ChevronRight,
+  Fuel,
+  Sparkles,
+  Mail,
+  XCircle,
+  Lock,
+  Unlock,
+  FileDown,
+  FileUp,
+  UserCheck,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ColumnBadge } from "@/components/status-badges";
 import { useAppStore } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
 import { EnviarLiberacaoDialog } from "@/components/enviar-liberacao-dialog";
@@ -18,10 +30,12 @@ import {
   responsavelInspecao,
 } from "@/lib/fila-inspecao";
 
-
 export const Route = createFileRoute("/_authenticated/inspetor/")({
   head: () => ({
-    meta: [{ title: "Inspeções — Planner Frota" }, { name: "description", content: "Lista de inspeções técnicas." }],
+    meta: [
+      { title: "Inspeções — Planner Frota" },
+      { name: "description", content: "Lista de inspeções técnicas." },
+    ],
   }),
   component: InspectorList,
 });
@@ -31,46 +45,39 @@ function InspectorList() {
   const meuId = profile?.id ?? "";
   const meuNome = profile?.nome ?? "Inspetor";
   const gestor = roles.some((r) => r === "admin" || r === "pcm" || r === "supervisor");
-  // Só quem tem a função INSPETOR (ou admin) executa inspeções. Os demais perfis
-  // (PCM, supervisor, gerência) continuam vendo as telas em modo leitura.
   const podeInspecionar = roles.some((r) => r === "inspetor" || r === "admin");
 
   const allInspections = useAppStore((s) => s.inspections);
   const assets = useAppStore((s) => s.assets);
   const updateAsset = useAppStore((s) => s.updateAsset);
   const prefixosAtivos = new Set(assets.map((a) => normPrefixo(a.prefixo)));
-  // Inspetor "puro" vê só o histórico dele; gestão (admin/PCM/supervisor/gerência) vê tudo.
-  const soMinhas = podeInspecionar && !gestor;
+
   const norm = (s: string) =>
     s
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .trim()
       .toLowerCase();
+
   const inspections = allInspections.filter(
-    (i) => prefixosAtivos.has(normPrefixo(i.prefixo)) && (!soMinhas || norm(i.inspetor ?? "") === norm(meuNome)),
+    (i) =>
+      prefixosAtivos.has(normPrefixo(i.prefixo)) &&
+      (gestor || norm(i.inspetor ?? "") === norm(meuNome)),
   );
-  // FONTE ÚNICA: mesma fila que o supervisor enxerga em "Enviar para inspeção".
+
   const fila = filaInspecao(assets);
   const responsavel = responsavelInspecao;
+
   const entradas = fila.filter((a) => !ehInspecaoSaida(a));
   const minhas = entradas.filter((a) => responsavel(a)?.id === meuId);
   const deOutros = entradas.filter((a) => {
     const r = responsavel(a);
     return !!r && r.id !== meuId;
   });
-  // Devolvidas pelo supervisor sem inspetor alocado: precisam aparecer para todos,
-  // senão a máquina devolvida some da tela do inspetor.
   const semResponsavel = entradas.filter((a) => !responsavel(a));
   const semAlocacao = aguardandoAlocacao(assets);
-  const pendentes = [...minhas, ...deOutros, ...semResponsavel, ...semAlocacao];
 
-
-  // Máquinas aguardando inspeção de saída — mesma fila, coluna aguardando_saida
   const aguardandoSaida = fila.filter((a) => ehInspecaoSaida(a));
-
-
-
   const prontosEnvio = assets.filter((a) => a.libNovoStatus === "pronto_envio");
   const rejeitadas = assets.filter((a) => a.libNovoStatus === "rejeitado");
 
@@ -78,12 +85,36 @@ function InspectorList() {
   const [prefixoAntigo, setPrefixoAntigo] = useState("");
   const [antigoAsset, setAntigoAsset] = useState<Asset | null>(null);
 
+  const secoes = useMemo(() => {
+    if (gestor) {
+      return [
+        {
+          key: "todas_entradas",
+          titulo: "Máquinas em Inspeção (Visão de Gestão)",
+          lista: [...minhas, ...deOutros, ...semResponsavel],
+        },
+        {
+          key: "espera",
+          titulo: "Aguardando liberação / alocação do supervisor",
+          lista: semAlocacao,
+        },
+      ].filter((g) => g.lista.length > 0);
+    }
+    return [
+      { key: "minhas", titulo: "Minhas inspeções", lista: minhas },
+      { key: "outros", titulo: "De outros inspetores", lista: deOutros },
+      { key: "espera", titulo: "Aguardando liberação do supervisor", lista: semAlocacao },
+    ].filter((g) => g.lista.length > 0);
+  }, [gestor, minhas, deOutros, semResponsavel, semAlocacao]);
+
   return (
     <div className="mx-auto max-w-5xl px-3 py-4 md:px-6 md:py-8">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold md:text-3xl">Inspeções</h1>
-          <p className="text-sm text-muted-foreground">{inspections.length} inspeção(ões) registrada(s)</p>
+          <p className="text-sm text-muted-foreground">
+            {inspections.length} inspeção(ões) registrada(s)
+          </p>
         </div>
         {podeInspecionar && (
           <Button asChild size="lg" className="tap-target gap-2">
@@ -135,110 +166,84 @@ function InspectorList() {
         </CardContent>
       </Card>
 
-
-
-      {/* Solicitações do supervisor entram nos grupos abaixo (fila única). */}
-
-
-
-      {pendentes.length > 0 && (
+      {secoes.length > 0 && (
         <div className="mb-5 grid gap-5">
-          {([
-            { key: "minhas", titulo: "Minhas inspeções", lista: minhas },
-            { key: "outros", titulo: "De outros inspetores", lista: deOutros },
-            { key: "espera", titulo: "Aguardando liberação do supervisor", lista: semAlocacao },
-          ] as const)
-            .filter((g) => g.lista.length > 0)
-            .map((g) => (
-              <div key={g.key}>
-                <div
-                  className={`mb-2 flex items-center gap-2 text-sm font-semibold ${
-                    g.key === "minhas" ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  {g.key === "minhas" ? <Sparkles className="h-4 w-4" /> : <Lock className="h-4 w-4" />}{" "}
-                  {g.titulo} · {g.lista.length}
-                </div>
-                <div className="grid gap-2">
-                  {g.lista.map((a) => {
-                    const resp = responsavel(a);
-                    const mine = g.key === "minhas";
-                    const podeAgir = mine || gestor;
-                    return (
-                      <Card
-                        key={a.id}
-                        className={`border-2 transition-colors ${
-                          mine
-                            ? "border-dashed border-primary/40 bg-primary/5 hover:border-primary"
-                            : "border-muted bg-muted/30 opacity-70"
-                        }`}
-                      >
-                        <CardContent className="flex flex-wrap items-center gap-3 p-3">
-                          <div
-                            className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${
-                              mine ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {mine ? <Sparkles className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="font-display font-bold">{a.prefixo}</div>
-                            <div
-                              className={`text-[11px] uppercase tracking-wide ${
-                                mine ? "text-primary/80" : "text-muted-foreground"
-                              }`}
-                            >
-                              {g.key === "minhas"
-                                ? "Alocada para você"
-                                : g.key === "outros"
-                                  ? `Alocada para ${resp?.nome ?? "outro inspetor"}`
-                                  : "Aguardando liberação do supervisor"}
-                            </div>
-                          </div>
-                          {mine && a.inspetorLockId === meuId && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1"
-                              onClick={() =>
-                                updateAsset(a.id, {
-                                  inspetorLockId: undefined,
-                                  inspetorLockNome: undefined,
-                                  inspetorLockEm: undefined,
-                                })
-                              }
-                            >
-                              <Unlock className="h-4 w-4" /> Liberar
-                            </Button>
-                          )}
-                          {podeAgir && podeInspecionar ? (
-                            <Button size="sm" asChild className="gap-1">
-                              <Link to="/inspetor/nova" search={{ prefixo: a.prefixo }}>
-                                <ClipboardCheck className="h-4 w-4" />{" "}
-                                {a.inspectionDraft ? "Continuar" : "Inspecionar"}
-                              </Link>
-                            </Button>
-                          ) : podeInspecionar ? (
-                            <Button size="sm" disabled className="gap-1">
-                              <Lock className="h-4 w-4" /> Bloqueada
-                            </Button>
-                          ) : null}
-
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+          {secoes.map((g) => (
+            <div key={g.key}>
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-primary">
+                <UserCheck className="h-4 w-4" /> {g.titulo} · {g.lista.length}
               </div>
-            ))}
+              <div className="grid gap-2">
+                {g.lista.map((a) => {
+                  const resp = responsavel(a);
+                  const mine = resp?.id === meuId || gestor;
+                  return (
+                    <Card
+                      key={a.id}
+                      className={`border-2 transition-colors ${
+                        mine
+                          ? "border-dashed border-primary/40 bg-primary/5 hover:border-primary"
+                          : "border-muted bg-muted/30 opacity-70"
+                      }`}
+                    >
+                      <CardContent className="flex flex-wrap items-center gap-3 p-3">
+                        <div
+                          className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${
+                            mine ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {mine ? <Sparkles className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 font-display font-bold">
+                            {a.prefixo}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              — {a.marca} {a.modelo}
+                            </span>
+                          </div>
+                          <div className="text-[11px] uppercase tracking-wide text-primary/80">
+                            {resp ? `Inspetor: ${resp.nome}` : "Aguardando alocação"}
+                          </div>
+                        </div>
+
+                        {mine && a.inspetorLockId === meuId && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1"
+                            onClick={() =>
+                              updateAsset(a.id, {
+                                inspetorLockId: undefined,
+                                inspetorLockNome: undefined,
+                                inspetorLockEm: undefined,
+                              })
+                            }
+                          >
+                            <Unlock className="h-4 w-4" /> Liberar
+                          </Button>
+                        )}
+
+                        {podeInspecionar ? (
+                          <Button size="sm" asChild className="gap-1">
+                            <Link to="/inspetor/nova" search={{ prefixo: a.prefixo }}>
+                              <ClipboardCheck className="h-4 w-4" />{" "}
+                              {a.inspectionDraft ? "Continuar" : "Inspecionar"}
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button size="sm" disabled className="gap-1">
+                            <Lock className="h-4 w-4" /> Bloqueada
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
-
-
-      {/* Rascunhos já aparecem nos grupos acima (fila única de inspeção). */}
-
-
-
 
       <div className="mb-5">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-success">
@@ -250,19 +255,7 @@ function InspectorList() {
           </div>
         ) : (
           <div className="grid gap-2">
-            {aguardandoSaida.map((a) => {
-              const travadaPor = a.inspetorLockId
-                ? { id: a.inspetorLockId, nome: a.inspetorLockNome, em: a.inspetorLockEm }
-                : null;
-              const saidasRegistradas = allInspections.filter(
-                (i) => doAtivo(a, i) && i.tipo === "saida",
-              ).length;
-              // Alerta: máquina caiu na fila de saída sem nenhum check de entrada no sistema.
-              const semEntrada = !allInspections.some(
-                (i) => doAtivo(a, i) && (i.tipo === "entrada" || i.tipoEntradaSaida),
-              );
-              const travadaOutro = !!travadaPor && travadaPor.id !== meuId;
-              return (
+            {aguardandoSaida.map((a) => (
               <Card key={a.id} className="border-2 border-success/40 bg-success/5">
                 <CardContent className="grid gap-3 p-3">
                   <div className="flex flex-wrap items-center gap-3">
@@ -270,45 +263,18 @@ function InspectorList() {
                       <ClipboardCheck className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-display font-bold">{a.prefixo} <span className="text-xs font-normal text-muted-foreground">— {a.marca} {a.modelo}</span></div>
-                      <div className="text-[11px] uppercase tracking-wide text-success">Manutenção concluída · pronta para inspeção de saída</div>
-                      {travadaPor && (
-                        <div className="text-[11px] text-warning-foreground">
-                          Em inspeção por {travadaPor.nome ?? "inspetor"}
-                          {travadaPor.em && ` · desde ${new Date(travadaPor.em).toLocaleString("pt-BR")}`} —{" "}
-                          {saidasRegistradas === 0
-                            ? "nenhuma inspeção de saída enviada ainda"
-                            : `${saidasRegistradas} inspeção(ões) de saída enviada(s)`}
-                        </div>
-                      )}
-                      {!travadaPor && saidasRegistradas === 0 && (
-                        <div className="text-[11px] text-muted-foreground">Nenhuma inspeção de saída registrada até agora.</div>
-                      )}
-                      {semEntrada && (
-                        <div className="mt-0.5 text-[11px] font-semibold text-destructive">
-                          Atenção: não existe inspeção de entrada registrada no sistema para esta máquina.
-                        </div>
-                      )}
+                      <div className="font-display font-bold">
+                        {a.prefixo}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          — {a.marca} {a.modelo}
+                        </span>
+                      </div>
+                      <div className="text-[11px] uppercase tracking-wide text-success">
+                        Manutenção concluída · pronta para inspeção de saída
+                      </div>
                     </div>
-                    {travadaPor && (gestor || travadaPor.id === meuId) && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="gap-1"
-                        onClick={() => {
-                          updateAsset(a.id, {
-                            inspetorLockId: undefined,
-                            inspetorLockNome: undefined,
-                            inspetorLockEm: undefined,
-                          });
-                          toast.success(`Trava de inspeção liberada em ${a.prefixo}.`);
-                        }}
-                      >
-                        <Unlock className="h-4 w-4" /> Liberar trava
-                      </Button>
-                    )}
                     {podeInspecionar && (
-                      <Button size="sm" asChild className="gap-1" disabled={travadaOutro}>
+                      <Button size="sm" asChild className="gap-1">
                         <Link to="/inspetor/nova" search={{ prefixo: a.prefixo }}>
                           <ClipboardCheck className="h-4 w-4" />{" "}
                           {a.inspectionDraft ? "Continuar inspeção" : "Inspeção de saída"}
@@ -316,17 +282,12 @@ function InspectorList() {
                       </Button>
                     )}
                   </div>
-                  <OsDocsInspetor assetId={a.id} />
                 </CardContent>
               </Card>
-              );
-            })}
+            ))}
           </div>
         )}
       </div>
-
-
-
 
       {prontosEnvio.length > 0 && (
         <div className="mb-5">
@@ -341,7 +302,9 @@ function InspectorList() {
                     <Mail className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-display font-bold">{a.prefixo} <span className="text-xs font-normal text-muted-foreground">— {a.marca} {a.modelo}</span></div>
+                    <div className="font-display font-bold">
+                      {a.prefixo} <span className="text-xs font-normal text-muted-foreground">— {a.marca} {a.modelo}</span>
+                    </div>
                     <div className="text-[11px] text-muted-foreground">
                       Supervisor assinou: {a.libNovoSupervisorSig?.nome ?? "—"}
                       {a.libNovoSupervisorEm && ` · ${new Date(a.libNovoSupervisorEm).toLocaleString("pt-BR")}`}
@@ -356,6 +319,7 @@ function InspectorList() {
           </div>
         </div>
       )}
+
       {rejeitadas.length > 0 && (
         <div className="mb-5">
           <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-destructive">
@@ -369,12 +333,16 @@ function InspectorList() {
                     <XCircle className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-display font-bold">{a.prefixo} <span className="text-xs font-normal text-muted-foreground">— {a.marca} {a.modelo}</span></div>
+                    <div className="font-display font-bold">
+                      {a.prefixo} <span className="text-xs font-normal text-muted-foreground">— {a.marca} {a.modelo}</span>
+                    </div>
                     <div className="text-[11px] text-destructive">
                       Motivo: {a.libNovoRejeicaoMotivo ?? "—"}
                     </div>
                     {a.libNovoRejeicaoEm && (
-                      <div className="text-[10px] text-muted-foreground">{new Date(a.libNovoRejeicaoEm).toLocaleString("pt-BR")}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {new Date(a.libNovoRejeicaoEm).toLocaleString("pt-BR")}
+                      </div>
                     )}
                   </div>
                   {podeInspecionar && (
@@ -391,15 +359,11 @@ function InspectorList() {
         </div>
       )}
 
-
-
-
       <div className="grid gap-3">
         {inspections.map((i) => (
           <InspecaoHistoricoCard key={i.id} inspection={i} />
         ))}
       </div>
-
 
       {liberacaoAsset && (
         <EnviarLiberacaoDialog
@@ -423,7 +387,6 @@ function InspectorList() {
           }}
         />
       )}
-
     </div>
   );
 }
@@ -512,7 +475,6 @@ function InspecaoHistoricoCard({ inspection }: { inspection: Inspection }) {
   );
 }
 
-
 function OsDocsInspetor({ assetId }: { assetId: string }) {
   const workOrders = useAppStore((s) => s.workOrders);
   const osList = workOrders.filter((w) => w.assetId === assetId);
@@ -543,4 +505,3 @@ function OsDocsInspetor({ assetId }: { assetId: string }) {
     </div>
   );
 }
-

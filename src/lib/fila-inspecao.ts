@@ -1,10 +1,5 @@
 /**
  * Fonte ÚNICA da fila de inspeção.
- *
- * A tela do supervisor (enviar para inspeção) e a tela do inspetor precisam
- * mostrar exatamente as mesmas máquinas. Antes cada tela tinha o seu filtro,
- * e por isso o supervisor via 5 máquinas alocadas enquanto o inspetor via 3.
- * Qualquer nova tela que fale de inspeção deve usar estas funções.
  */
 import { isLiberado } from "@/lib/liberado";
 import type { Asset } from "@/lib/types";
@@ -34,11 +29,21 @@ export function foraDoFluxo(a: Asset): boolean {
 const porPrefixo = (a: Asset, b: Asset) => (a.prefixo ?? "").localeCompare(b.prefixo ?? "");
 
 /**
- * Colunas em que a máquina realmente está sob responsabilidade do inspetor.
- * Se o inspetor já finalizou e mandou para o PCM/manutenção/supervisor, a máquina
- * sai da fila mesmo que a alocação/trava antiga ainda esteja gravada no card.
+ * Colunas em que a máquina é considerada ativa no fluxo de inspeção/oficina.
  */
-const COLUNAS_INSPECAO = new Set(["chegada", "aguardando_saida"]);
+const COLUNAS_INSPECAO = new Set([
+  "chegada",
+  "aguardando_saida",
+  "mdo",
+  "atribu_do",
+  "manutencao",
+  "pcm",
+  "aguardando_rc",
+  "aguardando_pedido",
+  "aguardando_pcm",
+  "execucao_liberada",
+  "melhoria"
+]);
 
 export function emColunaDeInspecao(a: Asset): boolean {
   return COLUNAS_INSPECAO.has(String(a.column));
@@ -56,7 +61,6 @@ export function filaInspecao(assets: Asset[]): Asset[] {
     )
     .sort(porPrefixo);
 }
-
 
 /** Inspeção de saída x inspeção de entrada/reinspeção. */
 export function ehInspecaoSaida(a: Asset): boolean {
