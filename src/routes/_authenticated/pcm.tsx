@@ -1649,7 +1649,7 @@ function PendenciasDocSection({ itens }: { itens: PendenciaDoc[] }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold">{asset.prefixo}</span>
                   <Badge variant="outline" className="text-[10px] uppercase">
-                    {asset.column.replace(/_/g, " ")}
+                    {(asset.column || "").replace(/_/g, " ")}
                   </Badge>
                   {semAnexo && (
                     <Badge variant="destructive" className="text-[10px]">Sem anexo</Badge>
