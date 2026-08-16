@@ -119,7 +119,6 @@ export function HomeDashboard() {
                 const count = assets.filter((a) => a.column === c.key).length;
                 return (
                   <Link key={c.key} to="/planner" className="rounded-lg border bg-card p-3 transition-colors hover:border-primary/60">
-                    <ColumnBadge column={c.key} />
                     <div className="mt-2 font-display text-2xl font-bold">{count}</div>
                     <div className="text-[11px] text-muted-foreground">{c.title}</div>
                   </Link>
