@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useAppStore } from "@/lib/store";
 import type { SavedSignature } from "@/lib/types";
 
@@ -64,9 +64,6 @@ export function SignaturePad({ storageKey, label, onApply, applyLabel = "Aplicar
     setHasStroke(false);
   }, [configureContext]);
 
-  // Tablet/cell friendly signature surface: we draw directly from PointerEvent
-  // client coordinates mapped to the canvas' real on-screen rectangle. This
-  // avoids the offset caused by dialog transforms, zoom, DPR and page scroll.
   useEffect(() => {
     if (!open || mode !== "draw") return;
     const resize = () => {
@@ -138,7 +135,6 @@ export function SignaturePad({ storageKey, label, onApply, applyLabel = "Aplicar
     return false;
   }, [applyImageFile]);
 
-  // Aceita colar imagem (Ctrl+V / print / clipboard) enquanto o diálogo estiver aberto no modo upload
   useEffect(() => {
     if (!open || mode !== "upload") return;
     const onPaste = (ev: ClipboardEvent) => {
@@ -154,13 +150,6 @@ export function SignaturePad({ storageKey, label, onApply, applyLabel = "Aplicar
     };
   }, [open, mode, readPastedSignature]);
 
-  const handlePasteTarget = (ev: ReactClipboardEvent<HTMLDivElement>) => {
-    if (readPastedSignature(ev.clipboardData)) {
-      ev.preventDefault();
-      ev.currentTarget.textContent = "";
-    }
-  };
-
   const getCanvasPoint = (event: ReactPointerEvent<HTMLCanvasElement>) => {
     const canvas = sigRef.current;
     if (!canvas) return null;
@@ -168,9 +157,6 @@ export function SignaturePad({ storageKey, label, onApply, applyLabel = "Aplicar
     if (rect.width === 0 || rect.height === 0) return null;
 
     const native = event.nativeEvent;
-    // Em tablets Android/Chrome, clientY pode vir no viewport "layout" enquanto
-    // getBoundingClientRect() vem no viewport visual; isso desloca a assinatura.
-    // offsetX/Y é relativo ao próprio canvas e fica alinhado com caneta/toque.
     if (Number.isFinite(native.offsetX) && Number.isFinite(native.offsetY)) {
       return {
         x: Math.min(Math.max(native.offsetX, 0), rect.width),
@@ -250,9 +236,14 @@ export function SignaturePad({ storageKey, label, onApply, applyLabel = "Aplicar
     }
     setSaving(true);
     try {
-      const { uploadDataUrl } = await import("@/lib/storage");
-      const url = await uploadDataUrl("assinaturas", dataUrl, "assinatura.png");
-      saveSignature(storageKey, { nome: nome.trim(), cargo: cargo.trim(), dataUrl: url });
+      let finalUrl = dataUrl;
+      try {
+        const { uploadDataUrl } = await import("@/lib/storage");
+        finalUrl = await uploadDataUrl("assinaturas", dataUrl, "assinatura.png");
+      } catch (storageErr) {
+        console.warn("Storage upload falhou, salvando inline dataUrl", storageErr);
+      }
+      saveSignature(storageKey, { nome: nome.trim(), cargo: cargo.trim(), dataUrl: finalUrl });
       toast.success("Assinatura padrão salva.");
       setUploadedDataUrl(null);
       setOpen(false);
@@ -369,7 +360,6 @@ export function SignaturePad({ storageKey, label, onApply, applyLabel = "Aplicar
                     )}
                   </div>
                 </div>
-
               ) : (
                 <>
                   <div className="mb-1 flex justify-end">
