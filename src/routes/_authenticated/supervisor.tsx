@@ -580,7 +580,7 @@ function SupervisorPanel() {
                         <div className="text-xs text-muted-foreground">{m.especialidade} · {turnoLabel(m.turno)}</div>
                       </div>
                     </div>
-                    <Badge variant={m.status === "livre" ? "secondary" : "default"}>{m.status.replace("_", " ")}</Badge>
+                    <Badge variant={m.status === "livre" ? "secondary" : "default"}>{(m.status || "").replace(/_/g, " ")}</Badge>
                   </label>
                 );
               })}
@@ -636,7 +636,7 @@ function SupervisorPanel() {
                     m.status === "ativo" && "text-success",
                     m.status === "livre" && "text-info",
                     m.status === "fora_turno" && "text-muted-foreground",
-                  )}>{m.status.replace("_", " ")}</div>
+                  )}>{(m.status || "").replace(/_/g, " ")}</div>
                 </div>
               </div>
             ))}

@@ -175,7 +175,7 @@ export function EnviarParaInspecaoSection() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{a.prefixo}</span>
                     <Badge variant="outline" className="text-[10px] uppercase">
-                      {a.column.replace(/_/g, " ")}
+                      {(a.column || "").replace(/_/g, " ")}
                     </Badge>
                   </div>
                   <div className="truncate text-xs text-muted-foreground">
