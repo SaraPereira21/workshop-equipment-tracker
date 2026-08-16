@@ -165,7 +165,7 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
     <nav translate="no" className="flex flex-col gap-1 p-3" style={{ fontFamily: "inherit" }}>
       <div className="mb-4 px-2 pt-2">
         <div className="flex flex-col items-center gap-2 text-center">
-          <img src={logoAsset.url} alt="Engelog" className={cn("w-auto rounded bg-white p-1.5", collapsed ? "h-9" : "h-14")} />
+          <img src="/logo.png" alt="Engelog" className={cn("w-auto rounded bg-white p-1.5", collapsed ? "h-9" : "h-14")} />
           {!collapsed && (
             <div translate="no">
               <div className="font-display text-sm font-bold leading-tight text-sidebar-foreground" translate="no">PLANNER MATRIZ</div>
@@ -341,7 +341,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Sheet>
 
           <div className="flex flex-col items-center gap-0.5 md:hidden" translate="no">
-            <img src={logoAsset.url} alt="Engelog" className="h-9 w-auto rounded bg-white p-1" />
+            <img src="/logo.png" alt="Engelog" className="h-9 w-auto rounded bg-white p-1" />
             <div className="font-display text-[10px] font-bold leading-none" translate="no">PLANNER MATRIZ</div>
             <div className="text-[8px] uppercase tracking-wider text-muted-foreground" translate="no">Fluxo de Máquinas</div>
           </div>

@@ -154,7 +154,7 @@ function AuthPage() {
     <div className="grid min-h-screen place-items-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="items-center text-center">
-          <img src={logoAsset.url} alt="Engelog" className="h-14 w-auto" />
+          <img src="/logo.png" alt="Engelog" className="h-14 w-auto" />
           <CardTitle className="mt-4 font-display text-lg">PLANNER MATRIZ</CardTitle>
           <CardDescription>Fluxo de Máquinas — acesso restrito</CardDescription>
         </CardHeader>

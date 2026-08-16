@@ -68,7 +68,7 @@ function InstalarPage() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col gap-4 p-4">
       <header className="flex flex-col items-center gap-2 py-4 text-center">
-        <img src={logoAsset.url} alt="Engelog" className="h-16 w-auto rounded bg-white p-2" />
+        <img src="/logo.png" alt="Engelog" className="h-16 w-auto rounded bg-white p-2" />
         <h1 className="font-display text-xl font-bold">Instalar o PLANNER MATRIZ</h1>
         <p className="text-sm text-muted-foreground">
           Adicione o app à tela de início para abrir em tela cheia e trabalhar offline.
