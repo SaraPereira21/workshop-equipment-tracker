@@ -118,7 +118,7 @@ REVOKE EXECUTE ON FUNCTION public.set_updated_at() FROM anon, authenticated, pub
 -- FLEET CATALOG (dados SAP + cadastros novos)
 CREATE TABLE public.fleet_assets (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  codigo_armac TEXT NOT NULL UNIQUE,
+  codigo_Ativo TEXT NOT NULL UNIQUE,
   modelo TEXT NOT NULL DEFAULT '',
   tipo_objeto TEXT DEFAULT '',
   numero_serie TEXT DEFAULT '',

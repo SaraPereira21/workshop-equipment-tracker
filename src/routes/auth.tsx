@@ -15,7 +15,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const DOMINIOS_PERMITIDOS = ["fornecedoraengelog.com.br", "armac.com.br"];
+const DOMINIOS_PERMITIDOS = ["fornecedoraengelog.com.br", "Ativo.com.br"];
 
 const REGRAS_SENHA = [
   { label: "Mínimo de 8 caracteres", test: (s: string) => s.length >= 8 },
@@ -116,7 +116,7 @@ function AuthPage() {
     const dominio = email.split("@")[1];
     if (!dominio || !DOMINIOS_PERMITIDOS.includes(dominio)) {
       toast.error("E-mail não permitido", {
-        description: "Use seu e-mail @fornecedoraengelog.com.br ou @armac.com.br",
+        description: "Use seu e-mail @fornecedoraengelog.com.br ou @Ativo.com.br",
       });
       return;
     }
@@ -245,7 +245,7 @@ function AuthPage() {
                 <form onSubmit={handleCadastro} className="space-y-3">
                   <div className="rounded-md border border-primary/30 bg-primary/5 p-3 text-[11px] leading-relaxed text-muted-foreground">
                     Cadastro liberado apenas para e-mails corporativos
-                    <b> @fornecedoraengelog.com.br</b> e <b>@armac.com.br</b>. O acesso criado é de
+                    <b> @fornecedoraengelog.com.br</b> e <b>@Ativo.com.br</b>. O acesso criado é de
                     <b> somente visualização</b> (Planner e Indicadores).
                   </div>
                   <div>

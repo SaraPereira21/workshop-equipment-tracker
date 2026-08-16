@@ -65,7 +65,7 @@ function NovaInspecao() {
     tipoObjeto: "",
     inventario: "",
     serie: "",
-    codigoArmac: "",
+    codigoAtivo: "",
     horimetro: "",
     horimetroUltimoPMP: "",
     proximoAlvoPMP: "500",
@@ -83,13 +83,13 @@ function NovaInspecao() {
       tipoObjeto: data.tipo_objeto ?? h.tipoObjeto,
       inventario: data.numero_inventario ?? h.inventario,
       serie: data.numero_serie ?? h.serie,
-      codigoArmac: data.codigo_armac,
+      codigoAtivo: data.codigo_Ativo,
     }));
     setCandidatos([]);
     setCadastroStatus("encontrado");
   };
 
-  // Busca no cadastro (fleet_assets) por prefixo/ARMAC/inventário/série,
+  // Busca no cadastro (fleet_assets) por prefixo/Ativo/inventário/série,
   // com fallback pelo número do prefixo (ex.: CVW 092 -> CM00092).
   const lookupCadastro = async (prefixo: string) => {
     const p = prefixo.trim().toUpperCase();
@@ -99,13 +99,13 @@ function NovaInspecao() {
     const exato = await findFleetExact(p);
     if (exato) {
       aplicarCadastro(p, exato);
-      toast.success(`Cadastro SAP encontrado: ${exato.codigo_armac}`);
+      toast.success(`Cadastro SAP encontrado: ${exato.codigo_Ativo}`);
       return;
     }
     const cands = await findFleetCandidates(p);
     if (cands.length === 1) {
       aplicarCadastro(p, cands[0]);
-      toast.success(`Cadastro SAP vinculado: ${cands[0].codigo_armac}`);
+      toast.success(`Cadastro SAP vinculado: ${cands[0].codigo_Ativo}`);
       return;
     }
     if (cands.length > 1) {
@@ -351,7 +351,7 @@ function NovaInspecao() {
       modelo: header.modelo || "—",
       tipo: header.tipoObjeto || "Equipamento",
       inventario: header.inventario || undefined,
-      codigoArmac: header.codigoArmac || undefined,
+      codigoAtivo: header.codigoAtivo || undefined,
       numeroSerie: header.serie || undefined,
       horimetroAtual: horimetroNum,
       dataUltimaPreventiva: new Date().toISOString(),
@@ -370,7 +370,7 @@ function NovaInspecao() {
       modelo: header.modelo || baseAsset.modelo || "—",
       tipo: header.tipoObjeto || baseAsset.tipo || "Equipamento",
       inventario: header.inventario || baseAsset.inventario,
-      codigoArmac: header.codigoArmac || baseAsset.codigoArmac,
+      codigoAtivo: header.codigoAtivo || baseAsset.codigoAtivo,
       numeroSerie: header.serie || baseAsset.numeroSerie,
       horimetroAtual: horimetroNum,
       horimetroUltimoPMP: Number(header.horimetroUltimoPMP || baseAsset.horimetroUltimoPMP || "0"),
@@ -551,7 +551,7 @@ function NovaInspecao() {
       <Card>
         <CardContent className="grid gap-3 p-4 md:grid-cols-3">
           <div className="md:col-span-3">
-            <Label htmlFor="pref">Prefixo / Inventário / Código ARMAC</Label>
+            <Label htmlFor="pref">Prefixo / Inventário / Código Ativo</Label>
             <div className="flex gap-2">
               <Input
                 id="pref"
@@ -568,7 +568,7 @@ function NovaInspecao() {
             {cadastroStatus === "buscando" && <p className="mt-1 text-xs text-muted-foreground">Consultando cadastro SAP…</p>}
             {cadastroStatus === "encontrado" && (
               <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                <Badge variant="secondary">ARMAC: {header.codigoArmac || "—"}</Badge>
+                <Badge variant="secondary">Ativo: {header.codigoAtivo || "—"}</Badge>
                 {header.inventario && <Badge variant="outline">Inv.: {header.inventario}</Badge>}
                 {header.serie && <Badge variant="outline">Nº Série: {header.serie}</Badge>}
                 {header.tipoObjeto && <Badge variant="outline">{header.tipoObjeto}</Badge>}
@@ -576,7 +576,7 @@ function NovaInspecao() {
             )}
             {cadastroStatus === "nao_encontrado" && (
               <p className="mt-1 rounded-md border border-warning bg-warning/10 px-2 py-1 text-xs text-warning-foreground">
-                ⚠ Sem cadastro SAP — o vínculo só ocorre com correspondência de 100% no Nº inventário ou Cód. ARMAC.
+                ⚠ Sem cadastro SAP — o vínculo só ocorre com correspondência de 100% no Nº inventário ou Cód. Ativo.
                 Preencha modelo/série manualmente; o PCM foi avisado para providenciar o cadastro.
               </p>
             )}
@@ -584,17 +584,17 @@ function NovaInspecao() {
             {candidatos.length > 0 && (
               <div className="mt-2 rounded-md border bg-muted/30 p-2">
                 <p className="mb-1 text-xs font-semibold">
-                  O prefixo da oficina não é o código ARMAC. Selecione o equipamento correspondente no SAP:
+                  O prefixo da oficina não é o código Ativo. Selecione o equipamento correspondente no SAP:
                 </p>
                 <div className="max-h-56 space-y-1 overflow-y-auto">
                   {candidatos.map((c) => (
                     <button
-                      key={c.codigo_armac}
+                      key={c.codigo_Ativo}
                       type="button"
                       onClick={() => aplicarCadastro(header.prefixo.trim().toUpperCase(), c)}
                       className="w-full rounded-md border bg-background p-2 text-left text-xs hover:bg-muted"
                     >
-                      <span className="font-mono font-semibold">{c.codigo_armac}</span> — {c.modelo}
+                      <span className="font-mono font-semibold">{c.codigo_Ativo}</span> — {c.modelo}
                       <span className="block text-muted-foreground">
                         {c.tipo_objeto} {c.numero_serie ? `· Série ${c.numero_serie}` : ""}
                       </span>

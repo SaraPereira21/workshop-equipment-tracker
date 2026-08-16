@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export interface LiberacaoPayload {
   prefixo: string;
   inventario?: string;
-  codigo_armac?: string;
+  codigo_Ativo?: string;
   tipo_objeto?: string;
   modelo?: string;
   marca?: string;
@@ -81,7 +81,7 @@ function buildCorpoHtml(p: LiberacaoPayload) {
         <p style="margin:0 0 12px">Prezados, informamos a <b>liberação do equipamento ${escapeHtml(p.prefixo)}</b> conforme dados abaixo.</p>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           ${linha("Prefixo / Inventário", [p.prefixo, p.inventario].filter(Boolean).join(" / "))}
-          ${linha("Código ARMAC", p.codigo_armac)}
+          ${linha("Código Ativo", p.codigo_Ativo)}
           ${linha("Tipo do Objeto", p.tipo_objeto)}
           ${linha("Marca / Modelo", [p.marca, p.modelo].filter(Boolean).join(" "))}
           ${linha("Nº de Série / Chassi", p.numero_serie)}
@@ -106,38 +106,38 @@ export const sendLiberacaoEmail = createServerFn({ method: "POST" })
     const url = process.env.POWER_AUTOMATE_LIBERACAO_URL;
     let payloadData = data;
 
-    if (!payloadData.numero_serie || !payloadData.codigo_armac || !payloadData.inventario) {
+    if (!payloadData.numero_serie || !payloadData.codigo_Ativo || !payloadData.inventario) {
       const normalizedPrefix = normalizeTerm(payloadData.prefixo ?? "");
       const number = prefixNumber(payloadData.prefixo ?? "");
       const plain = number ? number.replace(/^0+/, "") || "0" : "";
       const padded = plain ? plain.padStart(5, "0") : "";
-      const filters = payloadData.codigo_armac
-        ? `codigo_armac.eq.${normalizeTerm(payloadData.codigo_armac)}`
+      const filters = payloadData.codigo_Ativo
+        ? `codigo_Ativo.eq.${normalizeTerm(payloadData.codigo_Ativo)}`
         : [
-          normalizedPrefix ? `codigo_armac.eq.${normalizedPrefix}` : "",
+          normalizedPrefix ? `codigo_Ativo.eq.${normalizedPrefix}` : "",
           normalizedPrefix ? `numero_inventario.eq.${normalizedPrefix}` : "",
           normalizedPrefix ? `numero_serie.eq.${normalizedPrefix}` : "",
-          padded ? `codigo_armac.ilike.%${padded}` : "",
-          plain ? `codigo_armac.ilike.%${plain}` : "",
+          padded ? `codigo_Ativo.ilike.%${padded}` : "",
+          plain ? `codigo_Ativo.ilike.%${plain}` : "",
         ].filter(Boolean).join(",");
 
       if (filters) {
         const { data: fleetRows } = await context.supabase
           .from("fleet_assets")
-          .select("codigo_armac, numero_inventario, numero_serie, marca, modelo, tipo_objeto")
+          .select("codigo_Ativo, numero_inventario, numero_serie, marca, modelo, tipo_objeto")
           .or(filters)
           .eq("ativo", true)
-          .order("codigo_armac")
+          .order("codigo_Ativo")
           .limit(20);
 
         const rows = fleetRows ?? [];
         const preferredPrefix = preferredFleetCodePrefix(payloadData.prefixo ?? "");
-        const fleet = rows.find((row) => preferredPrefix && String(row.codigo_armac ?? "").startsWith(preferredPrefix)) ?? rows[0];
+        const fleet = rows.find((row) => preferredPrefix && String(row.codigo_Ativo ?? "").startsWith(preferredPrefix)) ?? rows[0];
 
         if (fleet) {
           payloadData = {
             ...payloadData,
-            codigo_armac: payloadData.codigo_armac || String(fleet.codigo_armac ?? ""),
+            codigo_Ativo: payloadData.codigo_Ativo || String(fleet.codigo_Ativo ?? ""),
             inventario: payloadData.inventario || String(fleet.numero_inventario ?? ""),
             numero_serie: payloadData.numero_serie || String(fleet.numero_serie ?? ""),
             marca: payloadData.marca || String(fleet.marca ?? ""),
@@ -175,7 +175,7 @@ export const sendLiberacaoEmail = createServerFn({ method: "POST" })
       destinatariosLista: payloadData.destinatarios,
       prefixo: String(payloadData.prefixo ?? ""),
       inventario: String(payloadData.inventario ?? ""),
-      codigo_armac: String(payloadData.codigo_armac ?? ""),
+      codigo_Ativo: String(payloadData.codigo_Ativo ?? ""),
       tipo_objeto: String(payloadData.tipo_objeto ?? ""),
       modelo: String(payloadData.modelo ?? ""),
       marca: String(payloadData.marca ?? ""),

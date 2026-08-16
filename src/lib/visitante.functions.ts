@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const DOMINIOS_VISITANTE = ["fornecedoraengelog.com.br", "armac.com.br"];
+export const DOMINIOS_VISITANTE = ["fornecedoraengelog.com.br", "Ativo.com.br"];
 
 export function isDominioVisitante(email: string): boolean {
   const dom = email.trim().toLowerCase().split("@")[1];

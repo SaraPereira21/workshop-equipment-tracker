@@ -1,7 +1,7 @@
 // Busca de equipamentos no cadastro SAP (fleet_assets).
 //
 // REGRA: o vínculo automático só acontece com correspondência de 100% no
-// Nº INVENTÁRIO ou no CÓD. ARMAC (comparação normalizada: sem espaços,
+// Nº INVENTÁRIO ou no CÓD. Ativo (comparação normalizada: sem espaços,
 // pontuação ou diferença de maiúsculas — "TI 014" == "TI014").
 // Nada de casamento parcial por número (era isso que fazia "TI 014" puxar
 // um caminhão só porque terminava em 14). Sem correspondência exata o
@@ -11,7 +11,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FleetCandidate {
-  codigo_armac: string;
+  codigo_Ativo: string;
   marca: string | null;
   modelo: string;
   tipo_objeto: string | null;
@@ -19,7 +19,7 @@ export interface FleetCandidate {
   numero_serie: string | null;
 }
 
-const COLS = "codigo_armac, marca, modelo, tipo_objeto, numero_inventario, numero_serie";
+const COLS = "codigo_Ativo, marca, modelo, tipo_objeto, numero_inventario, numero_serie";
 
 export function normalizeTerm(term: string) {
   return term.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
@@ -31,15 +31,15 @@ export function prefixNumber(term: string): string | null {
   return m ? m[1] : null;
 }
 
-/** Verdadeiro só quando o registro bate 100% no inventário ou no ARMAC. */
+/** Verdadeiro só quando o registro bate 100% no inventário ou no Ativo. */
 function isExactMatch(term: string, row: FleetCandidate) {
   const p = normalizeTerm(term);
   if (!p) return false;
-  return normalizeTerm(row.codigo_armac ?? "") === p || normalizeTerm(row.numero_inventario ?? "") === p;
+  return normalizeTerm(row.codigo_Ativo ?? "") === p || normalizeTerm(row.numero_inventario ?? "") === p;
 }
 
 /**
- * Busca por correspondência exata (100%) no Nº inventário ou Cód. ARMAC.
+ * Busca por correspondência exata (100%) no Nº inventário ou Cód. Ativo.
  * Retorna null quando não há cadastro no SAP.
  */
 export async function findFleetExact(term: string): Promise<FleetCandidate | null> {
@@ -53,12 +53,12 @@ export async function findFleetExact(term: string): Promise<FleetCandidate | nul
 
   const base = () => supabase.from("fleet_assets").select(COLS).eq("ativo", true).limit(5);
   const tentativas = [
-    base().eq("codigo_armac", p),
+    base().eq("codigo_Ativo", p),
     base().ilike("numero_inventario", p),
   ];
   if (letters && digits) {
     tentativas.push(base().ilike("numero_inventario", `${letters} ${digits}`));
-    tentativas.push(base().ilike("codigo_armac", `${letters} ${digits}`));
+    tentativas.push(base().ilike("codigo_Ativo", `${letters} ${digits}`));
   }
 
   for (const t of tentativas) {
@@ -79,7 +79,7 @@ export async function findFleetCandidates(term: string): Promise<FleetCandidate[
 }
 
 
-/** Busca livre no cadastro: prefixo, ARMAC, inventário, série, modelo ou tipo. */
+/** Busca livre no cadastro: prefixo, Ativo, inventário, série, modelo ou tipo. */
 export async function searchFleet(term: string): Promise<FleetCandidate[]> {
   const t = term.trim().replace(/[,()]/g, " ").trim();
   if (t.length < 2) return [];
@@ -89,14 +89,14 @@ export async function searchFleet(term: string): Promise<FleetCandidate[]> {
     .eq("ativo", true)
     .or(
       [
-        `codigo_armac.ilike.%${t}%`,
+        `codigo_Ativo.ilike.%${t}%`,
         `numero_inventario.ilike.%${t}%`,
         `numero_serie.ilike.%${t}%`,
         `modelo.ilike.%${t}%`,
         `tipo_objeto.ilike.%${t}%`,
       ].join(","),
     )
-    .order("codigo_armac")
+    .order("codigo_Ativo")
     .limit(20);
   return (data ?? []) as FleetCandidate[];
 }

@@ -224,7 +224,7 @@ export type Database = {
       fleet_assets: {
         Row: {
           ativo: boolean
-          codigo_armac: string
+          codigo_Ativo: string
           created_at: string
           created_by: string | null
           fonte: string
@@ -238,7 +238,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
-          codigo_armac: string
+          codigo_Ativo: string
           created_at?: string
           created_by?: string | null
           fonte?: string
@@ -252,7 +252,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
-          codigo_armac?: string
+          codigo_Ativo?: string
           created_at?: string
           created_by?: string | null
           fonte?: string

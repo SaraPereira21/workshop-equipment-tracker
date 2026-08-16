@@ -182,12 +182,12 @@ export function NovaSolicitacaoDialog({
 
   const findDuplicate = (pref: string): Asset | undefined => {
     const key = normKey(pref);
-    const armac = normKey(fleet?.codigo_armac);
+    const Ativo = normKey(fleet?.codigo_Ativo);
     const inv = normKey(fleet?.numero_inventario);
     return assets.find((a) => {
       if (existingId && a.id === existingId) return false;
       if (key && normKey(a.prefixo) === key) return true;
-      if (armac && normKey(a.codigoArmac) === armac) return true;
+      if (Ativo && normKey(a.codigoAtivo) === Ativo) return true;
       if (inv && normKey(a.inventario) === inv) return true;
       return false;
     });
@@ -297,7 +297,7 @@ export function NovaSolicitacaoDialog({
         tipo: normalizeTipo(tipoEquipamento) || existing?.tipo || "Outro",
         marca: fleet?.marca || existing?.marca || "—",
         modelo: fleet?.modelo || existing?.modelo || "—",
-        codigoArmac: fleet?.codigo_armac ?? existing?.codigoArmac,
+        codigoAtivo: fleet?.codigo_Ativo ?? existing?.codigoAtivo,
         numeroSerie: fleet?.numero_serie ?? existing?.numeroSerie,
         inventario: fleet?.numero_inventario ?? existing?.inventario,
         horimetroAtual: (horNum ?? existing?.horimetroAtual) as never,
@@ -316,7 +316,7 @@ export function NovaSolicitacaoDialog({
         marca: fleet?.marca || "—",
         modelo: fleet?.modelo || "—",
         tipo: normalizeTipo(tipoEquipamento) || normalizeTipo(fleet?.tipo_objeto) || "Outro",
-        codigoArmac: fleet?.codigo_armac,
+        codigoAtivo: fleet?.codigo_Ativo,
         numeroSerie: fleet?.numero_serie ?? undefined,
         inventario: fleet?.numero_inventario ?? undefined,
         horimetroAtual: horNum as never,
@@ -429,7 +429,7 @@ export function NovaSolicitacaoDialog({
               )}
               {fleet && (
                 <p className="mt-1 text-[11px] text-success">
-                  Cadastro: {fleet.codigo_armac} · {fleet.marca ?? "—"} {fleet.modelo}
+                  Cadastro: {fleet.codigo_Ativo} · {fleet.marca ?? "—"} {fleet.modelo}
                   {fleet.numero_serie ? ` · SN ${fleet.numero_serie}` : ""}
                 </p>
               )}
@@ -440,12 +440,12 @@ export function NovaSolicitacaoDialog({
                   </div>
                   {fleetCands.map((c) => (
                     <button
-                      key={c.codigo_armac}
+                      key={c.codigo_Ativo}
                       type="button"
                       onClick={() => aplicarFleet(c)}
                       className="block w-full border-b px-2 py-1.5 text-left text-xs last:border-b-0 hover:bg-muted"
                     >
-                      <b>{c.codigo_armac}</b> · {c.marca ?? "—"} {c.modelo}
+                      <b>{c.codigo_Ativo}</b> · {c.marca ?? "—"} {c.modelo}
                       {c.numero_serie ? ` · SN ${c.numero_serie}` : ""}
                     </button>
                   ))}
@@ -454,7 +454,7 @@ export function NovaSolicitacaoDialog({
               {!buscandoFleet && cadastroConsultado && !fleet && fleetCands.length === 0 && prefixo.trim() && (
                 <p className="mt-1 rounded-md border border-warning bg-warning/10 px-2 py-1 text-[11px] text-warning-foreground">
                   Sem cadastro SAP para <b>{prefixo.trim()}</b> — o vínculo exige correspondência de 100% no Nº inventário
-                  ou no Cód. ARMAC. Pesquise abaixo ou preencha modelo/série manualmente.
+                  ou no Cód. Ativo. Pesquise abaixo ou preencha modelo/série manualmente.
                 </p>
               )}
               {duplicado && (
@@ -475,7 +475,7 @@ export function NovaSolicitacaoDialog({
                 <div className="mt-2">
                   <Input
                     className="h-9"
-                    placeholder="Pesquisar cadastro SAP (prefixo, ARMAC, modelo, série…)"
+                    placeholder="Pesquisar cadastro SAP (prefixo, Ativo, modelo, série…)"
                     value={buscaLivre}
                     onChange={(e) => setBuscaLivre(e.target.value)}
                   />
@@ -483,12 +483,12 @@ export function NovaSolicitacaoDialog({
                     <div className="mt-1 max-h-40 overflow-y-auto rounded-md border">
                       {buscaResultados.map((c) => (
                         <button
-                          key={c.codigo_armac}
+                          key={c.codigo_Ativo}
                           type="button"
                           onClick={() => { aplicarFleet(c); setBuscaLivre(""); setCadastroConsultado(true); }}
                           className="block w-full border-b px-2 py-1.5 text-left text-xs last:border-b-0 hover:bg-muted"
                         >
-                          <b>{c.codigo_armac}</b>
+                          <b>{c.codigo_Ativo}</b>
                           {c.numero_inventario ? ` · ${c.numero_inventario}` : ""} · {c.marca ?? "—"} {c.modelo}
                         </button>
                       ))}

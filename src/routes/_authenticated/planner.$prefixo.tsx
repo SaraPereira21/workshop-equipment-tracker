@@ -360,14 +360,14 @@ function AssetDetail() {
         if (cands.length === 1) c = cands[0];
         else if (cands.length > 1) {
           toast.error(
-            `Encontrei ${cands.length} equipamentos parecidos no cadastro. Ajuste o prefixo (ex.: ${cands[0].numero_inventario || cands[0].codigo_armac}).`,
+            `Encontrei ${cands.length} equipamentos parecidos no cadastro. Ajuste o prefixo (ex.: ${cands[0].numero_inventario || cands[0].codigo_Ativo}).`,
           );
           return;
         }
       }
       if (!c) {
         // Sem cadastro SAP: limpa dados herdados para preenchimento manual.
-        updateAsset(asset.id, { marca: "", modelo: "", numeroSerie: "", codigoArmac: "", inventario: "" });
+        updateAsset(asset.id, { marca: "", modelo: "", numeroSerie: "", codigoAtivo: "", inventario: "" });
         toast.error(`Prefixo ${asset.prefixo} sem cadastro SAP — preencha os dados manualmente.`);
         return;
       }
@@ -376,10 +376,10 @@ function AssetDetail() {
         modelo: c.modelo || asset.modelo,
         tipo: c.tipo_objeto || asset.tipo,
         numeroSerie: c.numero_serie || asset.numeroSerie,
-        codigoArmac: c.codigo_armac || asset.codigoArmac,
+        codigoAtivo: c.codigo_Ativo || asset.codigoAtivo,
         inventario: c.numero_inventario || asset.inventario,
       });
-      toast.success(`Cadastro carregado: ${c.codigo_armac} — ${c.modelo}`);
+      toast.success(`Cadastro carregado: ${c.codigo_Ativo} — ${c.modelo}`);
     } catch (err) {
       console.error(err);
       toast.error("Falha ao consultar o cadastro SAP.");
@@ -426,11 +426,11 @@ function AssetDetail() {
           modelo: c.modelo || "",
           tipo: c.tipo_objeto || asset.tipo,
           numeroSerie: c.numero_serie || "",
-          codigoArmac: c.codigo_armac || "",
+          codigoAtivo: c.codigo_Ativo || "",
           inventario: c.numero_inventario || "",
         });
       } else {
-        updateAsset(asset.id, { marca: "", modelo: "", numeroSerie: "", codigoArmac: "", inventario: "" });
+        updateAsset(asset.id, { marca: "", modelo: "", numeroSerie: "", codigoAtivo: "", inventario: "" });
         toast.info(`Sem cadastro SAP para ${novo} — preencha os dados manualmente.`);
       }
     })();
@@ -522,7 +522,7 @@ function AssetDetail() {
             <span>
               {asset.marca} {asset.modelo} · {asset.tipo}
               {asset.numeroSerie ? ` · SN ${asset.numeroSerie}` : ""}
-              {asset.codigoArmac ? ` · ${asset.codigoArmac}` : ""}
+              {asset.codigoAtivo ? ` · ${asset.codigoAtivo}` : ""}
             </span>
             {canEdit && (
               <Button
@@ -547,14 +547,14 @@ function AssetDetail() {
           {canEdit && (
             <div className="mt-3 rounded-md border bg-muted/30 p-3">
               <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Dados técnicos {(!asset.codigoArmac && !asset.modelo) ? "— sem cadastro SAP, preencha manualmente" : "(edição manual)"}
+                Dados técnicos {(!asset.codigoAtivo && !asset.modelo) ? "— sem cadastro SAP, preencha manualmente" : "(edição manual)"}
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {([
                   ["Marca", "marca"],
                   ["Modelo", "modelo"],
                   ["Nº de série", "numeroSerie"],
-                  ["Cód. ARMAC", "codigoArmac"],
+                  ["Cód. Ativo", "codigoAtivo"],
                   ["Inventário", "inventario"],
                 ] as const).map(([rotulo, campo]) => (
                   <div key={campo}>

@@ -42,7 +42,7 @@ export interface SolicitacaoCompra {
   created_at: string;
   equipamento_id: string;
   prefixo_engelog: string | null;
-  codigo_armac: string | null;
+  codigo_Ativo: string | null;
   solicitante_nome: string | null;
 }
 

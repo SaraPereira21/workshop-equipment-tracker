@@ -124,7 +124,7 @@ export interface Asset {
   tags?: string[];
   contrato?: string;
   inventario?: string;
-  codigoArmac?: string;
+  codigoAtivo?: string;
   numeroSerie?: string;
   descricao?: string;
   pendingTasks?: PendingTask[];

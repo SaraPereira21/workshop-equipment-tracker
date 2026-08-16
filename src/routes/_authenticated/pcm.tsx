@@ -97,7 +97,7 @@ function PcmPage() {
     const q = buscaPreventiva.trim().toLowerCase();
     if (!q) return aguardandoPreventiva;
     return aguardandoPreventiva.filter((a) =>
-      [a.prefixo, a.modelo, a.marca, a.tipo, a.codigoArmac, a.numeroSerie]
+      [a.prefixo, a.modelo, a.marca, a.tipo, a.codigoAtivo, a.numeroSerie]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q)),
     );

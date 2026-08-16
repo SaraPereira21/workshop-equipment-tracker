@@ -49,7 +49,7 @@ function EditablePrefixo({ asset, canEdit }: { asset: Asset; canEdit: boolean })
             marca: "",
             modelo: "",
             numeroSerie: "",
-            codigoArmac: "",
+            codigoAtivo: "",
             inventario: "",
           });
           toast.info(`Sem cadastro SAP para ${novo} — preencha os dados manualmente.`);
@@ -60,10 +60,10 @@ function EditablePrefixo({ asset, canEdit }: { asset: Asset; canEdit: boolean })
           modelo: c.modelo || asset.modelo,
           tipo: c.tipo_objeto || asset.tipo,
           numeroSerie: c.numero_serie || asset.numeroSerie,
-          codigoArmac: c.codigo_armac || asset.codigoArmac,
+          codigoAtivo: c.codigo_Ativo || asset.codigoAtivo,
           inventario: c.numero_inventario || asset.inventario,
         });
-        toast.success(`Cadastro SAP carregado: ${c.codigo_armac} — ${c.modelo}`);
+        toast.success(`Cadastro SAP carregado: ${c.codigo_Ativo} — ${c.modelo}`);
       } catch {
         /* silencioso */
       }

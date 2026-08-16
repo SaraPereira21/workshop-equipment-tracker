@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/frota/catalogo")({
 
 interface FleetRow {
   id: string;
-  codigo_armac: string;
+  codigo_Ativo: string;
   modelo: string;
   tipo_objeto: string | null;
   numero_serie: string | null;
@@ -57,12 +57,12 @@ function FrotaCatalogo() {
       .from("fleet_assets")
       .select("*", { count: "exact" })
       .eq("ativo", true)
-      .order("codigo_armac")
+      .order("codigo_Ativo")
       .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
     const term = q.trim();
     if (term) {
       query = query.or(
-        `codigo_armac.ilike.%${term}%,modelo.ilike.%${term}%,numero_serie.ilike.%${term}%,numero_inventario.ilike.%${term}%,tipo_objeto.ilike.%${term}%`,
+        `codigo_Ativo.ilike.%${term}%,modelo.ilike.%${term}%,numero_serie.ilike.%${term}%,numero_inventario.ilike.%${term}%,tipo_objeto.ilike.%${term}%`,
       );
     }
     const { data, count, error } = await query;
@@ -103,7 +103,7 @@ function FrotaCatalogo() {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar por código ARMAC, modelo, série, inventário ou tipo..."
+              placeholder="Buscar por código Ativo, modelo, série, inventário ou tipo..."
               className="pl-9"
             />
           </div>
@@ -119,7 +119,7 @@ function FrotaCatalogo() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
                   <tr>
-                    <th className="p-2 text-left">Cód. ARMAC</th>
+                    <th className="p-2 text-left">Cód. Ativo</th>
                     <th className="p-2 text-left">Modelo</th>
                     <th className="p-2 text-left">Tipo</th>
                     <th className="p-2 text-left hidden md:table-cell">Nº Série</th>
@@ -131,7 +131,7 @@ function FrotaCatalogo() {
                 <tbody>
                   {rows.map((r) => (
                     <tr key={r.id} className="border-t hover:bg-muted/30">
-                      <td className="p-2 font-mono text-xs font-semibold">{r.codigo_armac}</td>
+                      <td className="p-2 font-mono text-xs font-semibold">{r.codigo_Ativo}</td>
                       <td className="p-2">{r.modelo}</td>
                       <td className="p-2 text-xs text-muted-foreground">{r.tipo_objeto}</td>
                       <td className="p-2 font-mono text-xs hidden md:table-cell">{r.numero_serie}</td>
@@ -170,7 +170,7 @@ function FrotaCatalogo() {
 }
 
 function FleetDialog({ row, onClose }: { row: FleetRow | null; onClose: (reload: boolean) => void }) {
-  const [codigo, setCodigo] = useState(row?.codigo_armac ?? "");
+  const [codigo, setCodigo] = useState(row?.codigo_Ativo ?? "");
   const [modelo, setModelo] = useState(row?.modelo ?? "");
   const [tipo, setTipo] = useState(row?.tipo_objeto ?? "");
   const [serie, setSerie] = useState(row?.numero_serie ?? "");
@@ -180,10 +180,10 @@ function FleetDialog({ row, onClose }: { row: FleetRow | null; onClose: (reload:
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (!codigo.trim() || !modelo.trim()) { toast.error("Código ARMAC e Modelo obrigatórios"); return; }
+    if (!codigo.trim() || !modelo.trim()) { toast.error("Código Ativo e Modelo obrigatórios"); return; }
     setSaving(true);
     const payload = {
-      codigo_armac: codigo.trim(),
+      codigo_Ativo: codigo.trim(),
       modelo: modelo.trim(),
       tipo_objeto: tipo.trim(),
       numero_serie: serie.trim(),
@@ -208,7 +208,7 @@ function FleetDialog({ row, onClose }: { row: FleetRow | null; onClose: (reload:
       <DialogContent className="max-w-lg">
         <DialogHeader><DialogTitle>{row ? "Editar equipamento" : "Novo equipamento"}</DialogTitle></DialogHeader>
         <div className="grid gap-3 md:grid-cols-2">
-          <div className="md:col-span-2"><Label>Código ARMAC *</Label><Input value={codigo} onChange={(e) => setCodigo(e.target.value)} disabled={!!row} /></div>
+          <div className="md:col-span-2"><Label>Código Ativo *</Label><Input value={codigo} onChange={(e) => setCodigo(e.target.value)} disabled={!!row} /></div>
           <div className="md:col-span-2"><Label>Modelo *</Label><Input value={modelo} onChange={(e) => setModelo(e.target.value)} placeholder="Ex: 1234-DIE-VOLVO-VM270" /></div>
           <div><Label>Tipo</Label><Input value={tipo} onChange={(e) => setTipo(e.target.value)} placeholder="CAMINHAO" /></div>
           <div><Label>Marca</Label><Input value={marca} onChange={(e) => setMarca(e.target.value)} placeholder="VOLVO" /></div>

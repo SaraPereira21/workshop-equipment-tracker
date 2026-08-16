@@ -190,7 +190,7 @@ export function RevisaoInspecaoDialog({
           data: {
             prefixo: asset.prefixo,
             inventario: asset.inventario,
-            codigo_armac: asset.codigoArmac,
+            codigo_Ativo: asset.codigoAtivo,
             numero_serie: asset.numeroSerie,
             modelo: asset.modelo,
             marca: asset.marca,

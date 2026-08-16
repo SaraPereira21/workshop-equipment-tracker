@@ -1,7 +1,7 @@
 import type { Asset } from "@/lib/types";
 
 /**
- * Bloco com os dados técnicos da máquina (modelo, cód. ARMAC, nº de série…)
+ * Bloco com os dados técnicos da máquina (modelo, cód. Ativo, nº de série…)
  * usado nos diálogos de corretiva e preventiva do PCM.
  */
 export function AssetDataGrid({ asset }: { asset: Asset }) {
@@ -9,7 +9,7 @@ export function AssetDataGrid({ asset }: { asset: Asset }) {
     { rotulo: "Modelo", valor: asset.modelo },
     { rotulo: "Marca", valor: asset.marca },
     { rotulo: "Tipo", valor: asset.tipo },
-    { rotulo: "Cód. ARMAC", valor: asset.codigoArmac },
+    { rotulo: "Cód. Ativo", valor: asset.codigoAtivo },
     { rotulo: "Nº de série", valor: asset.numeroSerie },
     { rotulo: "Inventário", valor: asset.inventario },
     { rotulo: "Horímetro", valor: asset.horimetroAtual ? `${asset.horimetroAtual}h` : "" },

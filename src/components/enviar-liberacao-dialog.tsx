@@ -546,7 +546,7 @@ export function EnviarLiberacaoDialog({
         data: {
           prefixo: asset.prefixo,
           inventario: asset.inventario,
-          codigo_armac: asset.codigoArmac,
+          codigo_Ativo: asset.codigoAtivo,
           numero_serie: asset.numeroSerie,
           marca: asset.marca,
           modelo: asset.modelo,
